@@ -10,7 +10,7 @@ class Timer extends React.Component {
         
         <div className="container-fluid no-padding">
             <div className="row justify-content-md-center" style={{background: 'skyblue'}}>
-                <div className="col-md-6" style={{background: 'green', alignItems: 'center', justifyContent: 'center', display: 'flex'}}>
+                <div className="col-md-6" style={{alignItems: 'center', justifyContent: 'center', display: 'flex'}}>
                     <span id="timer">Time Left: {this.props.seconds}  </span>
                  </div>
             </div>
@@ -72,8 +72,14 @@ class Timer extends React.Component {
                 currentChamp: null,
                 picks: [],
                 turnCount: 0,
-                chosenChamps: new Set()
+                chosenChamps: new Set(),
+                seconds: 30,
+                isClicked: false,
+                startCoundown: false,
             }
+
+            this.startCountDown = this.startCountDown.bind(this);
+            this.tick = this.tick.bind(this);
         }
 
         renderChamp(name) {
@@ -96,7 +102,7 @@ class Timer extends React.Component {
         }
 
         lockinChamp() {
-            if (this.props.lockEnable == true && !this.chosenCheck(this.state.currentChamp))
+            if (this.state.isClicked == true && !this.chosenCheck(this.state.currentChamp))
             {
                 var newPicks = this.state.picks.slice();
                 var champName = this.state.currentChamp;
@@ -119,6 +125,38 @@ class Timer extends React.Component {
         }
        
   
+        timeExpired() {
+            var count = this.state.turnCount;
+            count++;
+            this.setState({turnCount: count});
+            
+            var newPicks = this.state.picks.slice();
+            var champImage = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Black_photo.jpg/450px-Black_photo.jpg";
+            newPicks.push(champImage);
+            this.setState({picks: newPicks});
+        }
+
+        tick() {
+            var sec = this.state.seconds;
+            if (sec > 0) {
+                sec--;
+                this.setState({seconds: sec});
+            }
+            else {
+                this.timeExpired();
+                this.setState({seconds: 30});
+            }
+        }
+    
+        startCountDown() {
+            this.intervalHandle = setInterval(this.tick, 1000);
+            this.setState({isClicked: true});
+        }
+    
+      
+        resetTimer() {
+            this.setState({seconds: 30});
+        }
     
 
         render() {
@@ -127,14 +165,22 @@ class Timer extends React.Component {
 
                 <div className="container-fluid no-padding" style={{background: 'rgb(77, 75, 75)',height: '900px'}}>
 
+                <div className="row justify-content-md-center" style={{ height: '100px', marginTop: '1rem'}}>
+                    <StartButton startCountDown={this.startCountDown} />
+                </div>
+
                     <div className="row justify-content-md-center" style={{ height: '100px', marginTop: '1rem'}}>
                         <div class="col-md-6 my-auto" style ={{height:'100px', backgroundColor: 'black'}}>
                             <div className="row" style={{ height: '100px'}}>
                                 <div class="col-md-3 my-auto" style ={{justifyContent: 'center', display: 'flex', alignItems:'center', height:'100px', backgroundColor: 'blue'}}>
                                 </div>
-                                <div class="col-md-6 my-auto" style ={{justifyContent: 'center', display: 'flex', alignItems:'center', height:'100px'}}>          
+                                <div class="col-md-6 my-auto" style ={{justifyContent: 'center', display: 'flex', alignItems:'center', height:'100px'}}>      
+                                <div className="timer">
+                                    <Timer seconds={this.state.seconds}/>
+                                    </div>
+                                    
                                     <LockButton onClick={() => {
-                                        this.props.reset();
+                                        this.resetTimer();
                                         this.lockinChamp();
                                         }} />
                                 </div>
@@ -416,48 +462,44 @@ class Timer extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            seconds: 30,
-            isClicked: false,
-            currentChamp: null,
+            // seconds: 30,
+            // isClicked: false,
+            startCountdown: false,
         }
-        this.startCountDown = this.startCountDown.bind(this);
-        this.tick = this.tick.bind(this);
+        // this.startCountDown = this.startCountDown.bind(this);
+        // this.tick = this.tick.bind(this);
 
     }
 
-    tick() {
-        var sec = this.state.seconds;
-        if (sec > 0) {
-            sec--;
-            this.setState({seconds: sec});
-        }
-        else {
-            this.setState({seconds: 30});
-        }
-    }
-
-    startCountDown() {
-        this.intervalHandle = setInterval(this.tick, 1000);
-        this.setState({isClicked: true});
-    }
+    // tick() {
+    //     var sec = this.state.seconds;
+    //     if (sec > 0) {
+    //         sec--;
+    //         this.setState({seconds: sec});
+    //     }
+    //     else {
+    //         this.timeExpired();
+    //         this.setState({seconds: 30});
+    //     }
+    // }
 
   
-    resetTimer() {
-        this.setState({seconds: 30});
-    }
+    // resetTimer() {
+    //     this.setState({seconds: 30});
+    // }
  
     render() {
         return (
             <div className="draft">
-                <div className="startbutton">
-                    <StartButton startCountDown={this.startCountDown} />
-                </div>
+                {/* <div className="startbutton">
+                    <StartButton startCountDown={() => this.startCountDown} />
+                </div> */}
 
-                <div className="timer">
+                {/* <div className="timer">
                     <Timer seconds={this.state.seconds}/>
-                </div>
+                </div> */}
                 <div className="board">
-                    <Board lockEnable={this.state.isClicked} reset={() => this.resetTimer()}/>
+                    <Board/>
                 </div>
             </div>
         );
